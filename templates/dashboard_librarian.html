@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Librarian Operations Console{% endblock %}
+{% block header_title %}Library Operations & Circulation Console{% endblock %}
+
+{% block content %}
+<!-- Top Header & Quick Actions -->
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1" style="color: var(--forest-green);">Circulation & Library Management</h2>
+        <p class="text-secondary mb-0">Logged in as: <span class="fw-semibold">{{ session.get('name') }}</span> (Chief Circulation)</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('librarian_returns') }}" class="btn btn-forest">
+            <i class="bi bi-check2-circle me-1"></i>Verify Pending Returns ({{ data.pending_ret_cnt }})
+        </a>
+        <a href="{{ url_for('librarian_add_book') }}" class="btn btn-gold">
+            <i class="bi bi-plus-circle me-1"></i>Add New Book
+        </a>
+        <a href="{{ url_for('librarian_fines') }}" class="btn btn-outline-forest">
+            <i class="bi bi-cash-coin me-1"></i>Fine Desk
+        </a>
+    </div>
+</div>
+
+<!-- 8 KPI Metrics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-collection"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.titles_cnt }}</div>
+                <div class="kpi-label">Book Titles</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-bookshelf"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.copies_cnt }}</div>
+                <div class="kpi-label">Physical Copies</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card accent-info">
+            <div class="kpi-icon info"><i class="bi bi-check2-square"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.avail_cnt }}</div>
+                <div class="kpi-label">Available Copies</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card accent-gold">
+            <div class="kpi-icon gold"><i class="bi bi-journal-arrow-up"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.borrowed_cnt }}</div>
+                <div class="kpi-label">Issued / Out</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card accent-gold">
+            <div class="kpi-icon gold"><i class="bi bi-box-arrow-down-left"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.pending_ret_cnt }}</div>
+                <div class="kpi-label">Pending Returns</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card accent-info">
+            <div class="kpi-icon info"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.res_cnt }}</div>
+                <div class="kpi-label">Active Reservations</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card accent-danger">
+            <div class="kpi-icon danger"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.overdue_cnt }}</div>
+                <div class="kpi-label">Overdue Loans</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-card accent-danger">
+            <div class="kpi-icon danger"><i class="bi bi-currency-rupee"></i></div>
+            <div>
+                <div class="kpi-value">₹{{ "%.2f"|format(data.outstanding_fines) }}</div>
+                <div class="kpi-label">Uncollected Fines</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Physical Returns Section -->
+<div class="card-academic mb-4">
+    <div class="card-header-academic bg-white">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-inbox text-warning"></i>
+            <span>Pending Physical Returns Verification ({{ data.pending_returns|length }})</span>
+        </span>
+        <a href="{{ url_for('librarian_returns') }}" class="btn btn-sm btn-outline-forest">All Returns</a>
+    </div>
+    <div class="card-body p-0">
+        {% if data.pending_returns %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Patron</th>
+                        <th>Book Title</th>
+                        <th>Barcode / Copy</th>
+                        <th>Due Date</th>
+                        <th>Return Requested</th>
+                        <th>Verify Physical Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ret in data.pending_returns %}
+                    <tr>
+                        <td>
+                            <strong>{{ ret.user_name }}</strong>
+                            <div class="small text-muted">{{ ret.university_id }}</div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('book_detail', book_id=ret.book_id) }}" class="fw-semibold text-dark text-decoration-none">
+                                {{ ret.book_title }}
+                            </a>
+                        </td>
+                        <td><code>{{ ret.copy_code }}</code></td>
+                        <td>{{ ret.due_date }}</td>
+                        <td><span class="badge bg-warning-subtle text-warning">{{ ret.return_request_date }}</span></td>
+                        <td>
+                            <form action="{{ url_for('librarian_confirm_return', borrowing_id=ret.id) }}" method="POST" class="d-flex align-items-center gap-2">
+                                <select name="condition" class="form-select form-select-sm" style="width: 100px;">
+                                    <option value="Good" selected>Good</option>
+                                    <option value="New">New</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Damaged">Damaged</option>
+                                </select>
+                                <button type="submit" class="btn btn-forest btn-sm" onclick="return confirm('Confirm physical receipt of copy {{ ret.copy_code }} from {{ ret.user_name }}?')">
+                                    <i class="bi bi-check2-circle me-1"></i>Confirm
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <i class="bi bi-check-all fs-2 text-success"></i>
+            <p class="mt-2 mb-0">All return requests have been processed! No pending physical returns.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Overdue Loans Monitoring -->
+<div class="card-academic mb-4">
+    <div class="card-header-academic bg-white">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history text-danger"></i>
+            <span>Overdue Book Loans (Fine Accumulating at ₹5/day)</span>
+        </span>
+        <a href="{{ url_for('librarian_circulation') }}?filter=overdue" class="btn btn-sm btn-outline-danger">View All Overdue</a>
+    </div>
+    <div class="card-body p-0">
+        {% if data.overdue_loans %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Patron</th>
+                        <th>Book Title</th>
+                        <th>Copy Code</th>
+                        <th>Due Date</th>
+                        <th>Overdue Days</th>
+                        <th>Current Fine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in data.overdue_loans %}
+                    <tr>
+                        <td>
+                            <strong>{{ loan.user_name }}</strong>
+                            <div class="small text-muted">{{ loan.university_id }}</div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('book_detail', book_id=loan.book_id) }}" class="fw-semibold text-dark text-decoration-none">
+                                {{ loan.book_title }}
+                            </a>
+                        </td>
+                        <td><code>{{ loan.copy_code }}</code></td>
+                        <td class="text-danger fw-bold">{{ loan.due_date }}</td>
+                        <td><span class="badge bg-danger">{{ loan.days_overdue }} days</span></td>
+                        <td class="fw-bold text-danger">₹{{ "%.2f"|format(loan.days_overdue * 5) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">No overdue loans currently active.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

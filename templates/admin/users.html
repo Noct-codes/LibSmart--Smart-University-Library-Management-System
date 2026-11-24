@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users{% endblock %}
+{% block header_title %}Account Management & Role Assignment{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">Manage User Accounts</h3>
+        <p class="text-secondary mb-0">Create new accounts, assign roles (student, faculty, librarian, admin), and toggle activation.</p>
+    </div>
+    <a href="{{ url_for('admin_create_user') }}" class="btn btn-forest">
+        <i class="bi bi-person-plus-fill me-1"></i>Create New Account
+    </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card-academic p-3 mb-4">
+    <form method="GET" action="{{ url_for('admin_users') }}" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by name, ID or email...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="role" class="form-select" onchange="this.form.submit()">
+                <option value="">All Roles</option>
+                <option value="student" {% if selected_role == 'student' %}selected{% endif %}>Students</option>
+                <option value="faculty" {% if selected_role == 'faculty' %}selected{% endif %}>Faculty</option>
+                <option value="librarian" {% if selected_role == 'librarian' %}selected{% endif %}>Librarians</option>
+                <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Administrators</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-forest flex-grow-1">Filter</button>
+            {% if search_query or selected_role %}
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Users List -->
+<div class="card-academic">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-people text-success"></i>
+            <span>University User Accounts ({{ users|length }})</span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>University ID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Borrow Limit</th>
+                        <th>Account Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td><code>{{ u.university_id }}</code></td>
+                        <td class="fw-bold">{{ u.name }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            <span class="badge {% if u.role == 'student' %}bg-primary{% elif u.role == 'faculty' %}bg-success{% elif u.role == 'librarian' %}bg-warning text-dark{% else %}bg-dark{% endif %}">
+                                {{ u.role|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ u.max_borrow_limit }} books</td>
+                        <td>
+                            {% if u.is_active %}
+                            <span class="badge bg-success-subtle text-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger">Deactivated</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin_edit_user', user_id=u.id) }}" class="btn btn-outline-secondary btn-sm" title="Edit Account">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ url_for('admin_toggle_user_status', user_id=u.id) }}" method="POST" class="d-inline ms-1">
+                                    {% if u.is_active %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Deactivate" onclick="return confirm('Deactivate account for {{ u.name }}?')">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Activate" onclick="return confirm('Activate account for {{ u.name }}?')">
+                                        <i class="bi bi-person-check"></i>
+                                    </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">No users found matching your search.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

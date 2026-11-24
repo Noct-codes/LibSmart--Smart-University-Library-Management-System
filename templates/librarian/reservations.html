@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Reservations Queue{% endblock %}
+{% block header_title %}Reservation Queue Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">Reservation Queues & Holds</h3>
+        <p class="text-secondary mb-0">Monitor waiting patrons, ready pickups, and maintain queue priorities</p>
+    </div>
+</div>
+
+<div class="card-academic mb-4">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-hourglass-split text-info"></i>
+            <span>Active Reservations Across All Titles ({{ reservations|length }})</span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if reservations %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Patron</th>
+                        <th>Book Title</th>
+                        <th>Reserved Date</th>
+                        <th>Queue Position / Status</th>
+                        <th>Pickup Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservations %}
+                    <tr>
+                        <td>
+                            <strong>{{ r.user_name }}</strong>
+                            <div class="small text-muted">{{ r.university_id }} ({{ r.user_role|capitalize }})</div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('book_detail', book_id=r.book_id) }}" class="fw-semibold text-dark text-decoration-none">
+                                {{ r.book_title }}
+                            </a>
+                        </td>
+                        <td>{{ r.reservation_date }}</td>
+                        <td>
+                            {% if r.status == 'ready_for_pickup' %}
+                            <span class="badge-ready"><i class="bi bi-bell-fill me-1"></i>Ready for Pickup</span>
+                            {% elif r.status == 'pending' %}
+                            <span class="badge-pending">Queue Position #{{ r.queue_position }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ r.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.pickup_deadline %}
+                            <div class="text-danger fw-bold">{{ r.pickup_deadline }}</div>
+                            <div class="small text-muted">Copy held: <code>{{ r.copy_code }}</code></div>
+                            {% else %}
+                            <span class="text-muted small">Awaiting Return</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('librarian_cancel_reservation', res_id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this reservation? If a copy is held, it will pass to next person in queue.');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel Hold
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">There are currently no active reservations in the queue.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

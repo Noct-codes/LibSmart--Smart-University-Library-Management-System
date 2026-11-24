@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}My Reservations{% endblock %}
+{% block header_title %}Reserved Titles & Waiting Queue{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">My Book Reservations</h3>
+        <p class="text-secondary mb-0">Track queue positions, pickup alerts, and manage holds</p>
+    </div>
+    <a href="{{ url_for('catalogue') }}" class="btn btn-forest btn-sm">
+        <i class="bi bi-collection me-1"></i>Catalogue
+    </a>
+</div>
+
+<!-- Active Reservations -->
+<div class="card-academic mb-4">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-hourglass-split text-info"></i>
+            <span>Active Reservations ({{ reservations|length }})</span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if reservations %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Reserved Date</th>
+                        <th>Queue Position / Status</th>
+                        <th>Pickup Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in reservations %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('book_detail', book_id=res.book_id) }}" class="fw-bold text-dark text-decoration-none">
+                                {{ res.title }}
+                            </a>
+                            <div class="small text-muted">{{ res.author }}</div>
+                        </td>
+                        <td>{{ res.reservation_date }}</td>
+                        <td>
+                            {% if res.status == 'ready_for_pickup' %}
+                            <span class="badge-ready">
+                                <i class="bi bi-check-circle-fill me-1"></i>Ready for Pickup!
+                            </span>
+                            {% elif res.status == 'pending' %}
+                            <span class="badge-pending">
+                                <i class="bi bi-clock me-1"></i>Queue Position #{{ res.queue_position }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ res.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if res.status == 'ready_for_pickup' %}
+                            <div class="text-danger fw-bold">Before: {{ res.pickup_deadline }}</div>
+                            <div class="small text-muted">Held at Circulation Desk</div>
+                            {% else %}
+                            <span class="text-muted small">Assigned upon return</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if res.status == 'ready_for_pickup' %}
+                            <form action="{{ url_for('self_borrow', book_id=res.book_id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-journal-check me-1"></i>Issue Reserved Copy
+                                </button>
+                            </form>
+                            {% elif res.status == 'pending' %}
+                            <form action="{{ url_for('user_cancel_reservation', res_id=res.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Cancel reservation for \'{{ res.title }}\'?')">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel Hold
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">You have no active book reservations. When a title has no copies available, you can reserve it from its detail page.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reservation Policy Guide -->
+<div class="card-academic p-3 bg-light">
+    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle text-primary me-1"></i>How LibSmart Reservations Work</h6>
+    <div class="row g-3 small text-secondary">
+        <div class="col-md-4">
+            <strong>1. Queue Allocation:</strong> When all copies of a book are out, patrons join a FIFO queue. Position #1 gets the next copy.
+        </div>
+        <div class="col-md-4">
+            <strong>2. Automatic Pickup Alert:</strong> Once a librarian confirms a returned copy, you will be notified immediately.
+        </div>
+        <div class="col-md-4">
+            <strong>3. 72-Hour Pickup Window:</strong> You have 3 days to collect your reserved book before it passes to the next person in line.
+        </div>
+    </div>
+</div>
+{% endblock %}

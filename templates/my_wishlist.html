@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wishlist{% endblock %}
+{% block header_title %}Saved Reading Wishlist{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">My Reading Wishlist</h3>
+        <p class="text-secondary mb-0">Saved titles with real-time physical availability monitoring</p>
+    </div>
+    <a href="{{ url_for('catalogue') }}" class="btn btn-forest btn-sm">
+        <i class="bi bi-search me-1"></i>Discover More Titles
+    </a>
+</div>
+
+{% if wishlist_items %}
+<div class="row g-4">
+    {% for item in wishlist_items %}
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card-academic h-100 p-3 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-light text-secondary border small">{{ item.category_name }}</span>
+                    {% if item.available_copies > 0 %}
+                    <span class="badge-available"><i class="bi bi-check-circle-fill me-1"></i>{{ item.available_copies }} Avail</span>
+                    {% else %}
+                    <span class="badge-unavailable"><i class="bi bi-x-circle-fill me-1"></i>All Copies Out</span>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold mb-1">
+                    <a href="{{ url_for('book_detail', book_id=item.id) }}" class="text-dark text-decoration-none">
+                        {{ item.title }}
+                    </a>
+                </h5>
+                <p class="text-secondary small mb-2">By {{ item.author }}</p>
+                <div class="small text-muted mb-3">
+                    <span>ISBN: {{ item.isbn }}</span> • <span>{{ item.shelf_location }}</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between pt-3 border-top gap-2">
+                <!-- Direct Action -->
+                {% if item.available_copies > 0 %}
+                <form action="{{ url_for('self_borrow', book_id=item.id) }}" method="POST">
+                    <button type="submit" class="btn btn-forest btn-sm" onclick="return confirm('Borrow \'{{ item.title }}\'?')">
+                        <i class="bi bi-journal-plus me-1"></i>Borrow Now
+                    </button>
+                </form>
+                {% else %}
+                <form action="{{ url_for('place_reservation', book_id=item.id) }}" method="POST">
+                    <button type="submit" class="btn btn-gold btn-sm" onclick="return confirm('Reserve \'{{ item.title }}\'?')">
+                        <i class="bi bi-hourglass me-1"></i>Reserve
+                    </button>
+                </form>
+                {% endif %}
+
+                <div class="d-flex gap-1">
+                    <a href="{{ url_for('book_detail', book_id=item.id) }}" class="btn btn-outline-forest btn-sm">Details</a>
+                    <form action="{{ url_for('toggle_wishlist', book_id=item.id) }}" method="POST">
+                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Remove from Wishlist">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card-academic p-5 text-center text-muted">
+    <i class="bi bi-bookmark-heart fs-1 text-secondary mb-2"></i>
+    <h5>Your Wishlist is Empty</h5>
+    <p class="mb-3">Save books you want to read later and easily check when they become available on shelves.</p>
+    <div>
+        <a href="{{ url_for('catalogue') }}" class="btn btn-forest btn-sm">Explore Book Catalogue</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,507 @@
+:root {
+    --forest-green: #153D32;
+    --forest-green-dark: #0e2922;
+    --forest-green-light: #1e5244;
+    --sage: #E9F0E9;
+    --sage-light: #F4F8F4;
+    --sage-dark: #cbd9cb;
+    --bg-color: #F5F7F5;
+    --white: #FFFFFF;
+    --accent-gold: #D69A42;
+    --accent-gold-hover: #b88031;
+    --accent-gold-soft: #fcf4e8;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --info: #0284c7;
+    --info-light: #e0f2fe;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sidebar & Layout */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background-color: var(--forest-green);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-brand {
+    padding: 1.5rem 1.25rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--white);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand i {
+    color: var(--accent-gold);
+    font-size: 1.75rem;
+}
+
+.sidebar-user {
+    padding: 1.25rem;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-transform: uppercase;
+    background-color: var(--accent-gold);
+    color: #fff;
+}
+
+.sidebar-nav {
+    padding: 1rem 0;
+    flex-grow: 1;
+}
+
+.nav-section-title {
+    padding: 0.5rem 1.25rem 0.25rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sage-dark);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1.25rem;
+    color: var(--sage);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+    color: var(--white);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-left-color: var(--accent-gold);
+}
+
+.sidebar-link.active {
+    color: var(--white);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-left-color: var(--accent-gold);
+    font-weight: 600;
+}
+
+.sidebar-link i {
+    font-size: 1.15rem;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content Area */
+.main-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.top-navbar {
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+}
+
+.content-body {
+    padding: 1.75rem 2rem;
+    flex-grow: 1;
+}
+
+/* Cards & Components */
+.card-academic {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-academic:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+.card-header-academic {
+    background-color: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    color: var(--forest-green);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* KPI Stat Cards */
+.kpi-card {
+    background: var(--white);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    padding: 1.25rem;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--forest-green);
+}
+
+.kpi-card.accent-gold::before {
+    background-color: var(--accent-gold);
+}
+
+.kpi-card.accent-danger::before {
+    background-color: var(--danger);
+}
+
+.kpi-card.accent-info::before {
+    background-color: var(--info);
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.kpi-icon.green {
+    background-color: var(--sage);
+    color: var(--forest-green);
+}
+
+.kpi-icon.gold {
+    background-color: var(--accent-gold-soft);
+    color: var(--accent-gold);
+}
+
+.kpi-icon.danger {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.kpi-icon.info {
+    background-color: var(--info-light);
+    color: var(--info);
+}
+
+.kpi-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--forest-green);
+    line-height: 1.1;
+}
+
+.kpi-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+/* Book Cover Styling */
+.book-cover-placeholder {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--forest-green) 0%, var(--forest-green-dark) 100%);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.book-cover-placeholder::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.book-cover-placeholder.variant-2 {
+    background: linear-gradient(135deg, #2c4c3b 0%, #153D32 100%);
+}
+
+.book-cover-placeholder.variant-3 {
+    background: linear-gradient(135deg, #1b3d37 0%, #0d2522 100%);
+}
+
+.book-cover-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #f8fafc;
+}
+
+.book-cover-author {
+    font-size: 0.75rem;
+    color: var(--sage);
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.book-cover-isbn {
+    font-size: 0.65rem;
+    color: var(--accent-gold);
+    font-family: monospace;
+}
+
+/* Book Card */
+.book-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--hover-shadow);
+    border-color: var(--sage-dark);
+}
+
+.book-card-body {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Badges */
+.badge-available {
+    background-color: var(--success-light);
+    color: var(--success);
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.badge-unavailable {
+    background-color: var(--danger-light);
+    color: var(--danger);
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.badge-pending {
+    background-color: var(--warning-light);
+    color: var(--warning);
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.badge-ready {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+/* Buttons */
+.btn-forest {
+    background-color: var(--forest-green);
+    color: var(--white);
+    border: 1px solid var(--forest-green);
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-forest:hover {
+    background-color: var(--forest-green-light);
+    color: var(--white);
+    border-color: var(--forest-green-light);
+}
+
+.btn-gold {
+    background-color: var(--accent-gold);
+    color: var(--white);
+    border: 1px solid var(--accent-gold);
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-gold:hover {
+    background-color: var(--accent-gold-hover);
+    color: var(--white);
+    border-color: var(--accent-gold-hover);
+}
+
+.btn-outline-forest {
+    background-color: transparent;
+    color: var(--forest-green);
+    border: 1px solid var(--forest-green);
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-forest:hover {
+    background-color: var(--sage);
+    color: var(--forest-green);
+}
+
+/* Clean Tables */
+.table-academic {
+    width: 100%;
+    margin-bottom: 0;
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.table-academic thead th {
+    background-color: var(--sage-light);
+    color: var(--forest-green);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-academic tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-academic tbody tr:hover {
+    background-color: #fafbfa;
+}
+
+/* Notifications Bell Badge */
+.nav-bell-btn {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 1.35rem;
+    color: var(--forest-green);
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.nav-bell-badge {
+    position: absolute;
+    top: -2px;
+    right: 0px;
+    background-color: var(--danger);
+    color: var(--white);
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Toast container */
+.toast-container {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 1090;
+}

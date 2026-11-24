@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Circulation Transactions{% endblock %}
+{% block header_title %}Library Circulation Desk{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">Circulation Transactions</h3>
+        <p class="text-secondary mb-0">Active book loans, overdue items, and university borrowing records</p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('librarian_circulation', filter='all') }}" class="btn btn-sm {% if current_filter == 'all' %}btn-forest{% else %}btn-outline-secondary{% endif %}">All</a>
+        <a href="{{ url_for('librarian_circulation', filter='active') }}" class="btn btn-sm {% if current_filter == 'active' %}btn-forest{% else %}btn-outline-secondary{% endif %}">Active Loans</a>
+        <a href="{{ url_for('librarian_circulation', filter='overdue') }}" class="btn btn-sm {% if current_filter == 'overdue' %}btn-forest{% else %}btn-outline-secondary{% endif %}">Overdue Only</a>
+        <a href="{{ url_for('librarian_circulation', filter='return_pending') }}" class="btn btn-sm {% if current_filter == 'return_pending' %}btn-forest{% else %}btn-outline-secondary{% endif %}">Return Pending</a>
+        <a href="{{ url_for('librarian_circulation', filter='returned') }}" class="btn btn-sm {% if current_filter == 'returned' %}btn-forest{% else %}btn-outline-secondary{% endif %}">Returned History</a>
+    </div>
+</div>
+
+<div class="card-academic">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-arrow-left-right text-success"></i>
+            <span>Borrowing Records ({{ borrowings|length }})</span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if borrowings %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Patron</th>
+                        <th>Book Title</th>
+                        <th>Copy Barcode</th>
+                        <th>Issued On</th>
+                        <th>Due Date</th>
+                        <th>Returned On</th>
+                        <th>Renewals</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in borrowings %}
+                    <tr>
+                        <td>
+                            <strong>{{ b.user_name }}</strong>
+                            <div class="small text-muted">{{ b.university_id }} ({{ b.user_role|capitalize }})</div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('book_detail', book_id=b.book_id) }}" class="fw-semibold text-dark text-decoration-none">
+                                {{ b.book_title }}
+                            </a>
+                        </td>
+                        <td><code>{{ b.copy_code }}</code></td>
+                        <td>{{ b.issue_date }}</td>
+                        <td>
+                            <span class="{% if b.is_overdue %}text-danger fw-bold{% endif %}">{{ b.due_date }}</span>
+                            {% if b.is_overdue %}
+                            <div class="badge bg-danger small">{{ b.days_overdue }} days overdue</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if b.return_date %}
+                            <span class="badge bg-light text-dark border">{{ b.return_date }}</span>
+                            {% else %}
+                            <span class="text-muted small">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ b.renewal_count }}/2</td>
+                        <td>
+                            {% if b.status == 'return_pending' %}
+                            <span class="badge-pending">Return Pending</span>
+                            {% elif b.status == 'overdue' or b.is_overdue %}
+                            <span class="badge-unavailable">Overdue</span>
+                            {% elif b.status == 'returned' %}
+                            <span class="badge bg-light text-muted border">Returned</span>
+                            {% else %}
+                            <span class="badge-available">Borrowed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if b.status == 'return_pending' %}
+                            <form action="{{ url_for('librarian_confirm_return', borrowing_id=b.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-forest">
+                                    Confirm Return
+                                </button>
+                            </form>
+                            {% elif b.status in ('borrowed', 'overdue') %}
+                            <!-- Librarian can force return at desk -->
+                            <form action="{{ url_for('librarian_confirm_return', borrowing_id=b.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-forest" onclick="return confirm('Directly record physical return of this book at desk?')">
+                                    Desk Return
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">No circulation records found for this filter.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

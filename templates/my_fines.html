@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}My Library Fines{% endblock %}
+{% block header_title %}Fines & Payment History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">Fines & Payment Records</h3>
+        <p class="text-secondary mb-0">Official University Library fine policy: ₹5.00 per overdue day (No grace period)</p>
+    </div>
+</div>
+
+<!-- Summary Card -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card accent-danger">
+            <div class="kpi-icon danger"><i class="bi bi-currency-rupee"></i></div>
+            <div>
+                <div class="kpi-value text-danger">₹{{ "%.2f"|format(total_outstanding) }}</div>
+                <div class="kpi-label">Total Outstanding Balance</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-check2-circle"></i></div>
+            <div>
+                <div class="kpi-value">₹{{ "%.2f"|format(total_paid_all) }}</div>
+                <div class="kpi-label">Total Fines Settled</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card accent-info">
+            <div class="kpi-icon info"><i class="bi bi-clock-history"></i></div>
+            <div>
+                <div class="kpi-value">{{ fines|length }}</div>
+                <div class="kpi-label">Total Incidents</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fines Detail Table -->
+<div class="card-academic mb-4">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-receipt text-danger"></i>
+            <span>Overdue Fines Breakdown ({{ fines|length }})</span>
+        </span>
+        <span class="badge bg-light text-secondary border">Fines must be settled at Library Circulation Desk</span>
+    </div>
+    <div class="card-body p-0">
+        {% if fines %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Due Date</th>
+                        <th>Return Date</th>
+                        <th>Overdue Days</th>
+                        <th>Total Fine</th>
+                        <th>Paid</th>
+                        <th>Remaining Balance</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fines %}
+                    <tr>
+                        <td>
+                            <strong>{{ f.book_title }}</strong>
+                            <div class="small text-muted">Issued: {{ f.issue_date }}</div>
+                        </td>
+                        <td>{{ f.due_date }}</td>
+                        <td>
+                            {% if f.return_date %}
+                            <span class="badge bg-light text-dark border">{{ f.return_date }}</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger">Not Yet Returned</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="fw-bold">{{ f.overdue_days }} days</span></td>
+                        <td class="fw-bold">₹{{ "%.2f"|format(f.amount) }}</td>
+                        <td class="text-success">₹{{ "%.2f"|format(f.total_paid) }}</td>
+                        <td class="fw-bold {% if f.remaining_balance > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            ₹{{ "%.2f"|format(f.remaining_balance) }}
+                        </td>
+                        <td>
+                            {% if f.status == 'paid' %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Paid</span>
+                            {% elif f.status == 'partially_paid' %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-pie-chart me-1"></i>Partially Paid</span>
+                            {% else %}
+                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Unpaid</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <i class="bi bi-shield-check fs-1 text-success"></i>
+            <p class="mt-2 mb-0">Congratulations! You have zero library fines on your university record.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Manual Payment Information Policy -->
+<div class="card-academic p-3 bg-light">
+    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-bank text-primary me-1"></i>Fine Payment Process</h6>
+    <p class="small text-secondary mb-0">
+        In accordance with university regulations, library fines cannot be paid through third-party automated gateways. Please visit the circulation desk in person where the librarian will accept Cash, Card, Bank Transfer, or record your manual UPI reference into the system. Partial payments are accepted.
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Borrowing Records{% endblock %}
+{% block header_title %}Student & Faculty Circulation Records{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">Patron Borrowing Records</h3>
+        <p class="text-secondary mb-0">Search students and faculty to view active loans, borrowing limits, and historical records</p>
+    </div>
+</div>
+
+<!-- Search Patron Form -->
+<div class="card-academic p-3 mb-4">
+    <form method="GET" action="{{ url_for('librarian_student_records') }}" class="row g-2">
+        <div class="col-md-9">
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by University ID, Name, or Email...">
+            </div>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-forest flex-grow-1">Search Patron</button>
+            {% if search_query %}
+            <a href="{{ url_for('librarian_student_records') }}" class="btn btn-outline-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Patrons List -->
+<div class="card-academic">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-people text-success"></i>
+            <span>University Patrons ({{ patrons|length }})</span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if patrons %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>University ID</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Active Loans / Limit</th>
+                        <th>Reservations</th>
+                        <th>Outstanding Fines</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patrons %}
+                    <tr>
+                        <td><code>{{ p.university_id }}</code></td>
+                        <td>
+                            <strong>{{ p.name }}</strong>
+                            <div class="small text-muted">{{ p.email }}</div>
+                        </td>
+                        <td>
+                            <span class="badge {% if p.role == 'student' %}bg-primary{% else %}bg-success{% endif %}">
+                                {{ p.role|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fw-bold">{{ p.active_loans_count }}</span> / {{ p.max_borrow_limit }} books
+                        </td>
+                        <td>{{ p.reservations_count }} active</td>
+                        <td>
+                            {% if p.unpaid_fines > 0 %}
+                            <span class="badge bg-danger">₹{{ "%.2f"|format(p.unpaid_fines) }}</span>
+                            {% else %}
+                            <span class="badge bg-light text-success border">₹0.00</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('librarian_circulation') }}?q={{ p.university_id }}" class="btn btn-outline-forest btn-sm">
+                                <i class="bi bi-clock-history me-1"></i>View Loans
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <p class="mb-0">No patrons found matching your search.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

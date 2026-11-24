@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }}{% endblock %}
+{% block header_title %}Book Information{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('catalogue') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Catalogue
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Book Details Card -->
+    <div class="col-lg-8">
+        <div class="card-academic p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row gap-4">
+                <!-- Cover -->
+                <div style="width: 180px; flex-shrink: 0;" class="mx-auto mx-md-0">
+                    <div class="book-cover-placeholder">
+                        <div class="book-cover-isbn">{{ book.isbn }}</div>
+                        <div>
+                            <div class="book-cover-title fs-6">{{ book.title }}</div>
+                            <div class="book-cover-author small">{{ book.author }}</div>
+                        </div>
+                        <div class="small opacity-75">{{ book.shelf_location }}</div>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <span class="badge bg-secondary-subtle text-secondary border">{{ book.category_name }}</span>
+                        {% if book.available_copies > 0 %}
+                        <span class="badge-available">
+                            <i class="bi bi-check-circle-fill me-1"></i>{{ book.available_copies }} of {{ book.total_copies }} Copies Available
+                        </span>
+                        {% else %}
+                        <span class="badge-unavailable">
+                            <i class="bi bi-x-circle-fill me-1"></i>0 of {{ book.total_copies }} Available (Reserved Queue Active)
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="fw-bold mb-1" style="color: var(--forest-green);">{{ book.title }}</h3>
+                    <p class="text-secondary fs-6 mb-3">By <span class="fw-semibold text-dark">{{ book.author }}</span></p>
+
+                    <div class="row g-2 small text-secondary mb-4 bg-light p-3 rounded border">
+                        <div class="col-6 col-sm-4"><strong>ISBN:</strong> {{ book.isbn }}</div>
+                        <div class="col-6 col-sm-4"><strong>Edition:</strong> {{ book.edition }}</div>
+                        <div class="col-6 col-sm-4"><strong>Year:</strong> {{ book.publication_year }}</div>
+                        <div class="col-6 col-sm-4"><strong>Publisher:</strong> {{ book.publisher or 'N/A' }}</div>
+                        <div class="col-6 col-sm-4"><strong>Category:</strong> {{ book.category_name }}</div>
+                        <div class="col-6 col-sm-4"><strong>Shelf Location:</strong> <span class="text-dark fw-bold">{{ book.shelf_location }}</span></div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Overview / Abstract</h6>
+                    <p class="text-secondary small leading-relaxed">{{ book.description }}</p>
+
+                    <!-- Student/Faculty Actions -->
+                    {% if session.get('role') in ('student', 'faculty') %}
+                    <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                        {% if book.available_copies > 0 %}
+                        <form action="{{ url_for('self_borrow', book_id=book.id) }}" method="POST">
+                            <button type="submit" class="btn btn-forest px-4" onclick="return confirm('Confirm borrowing \'{{ book.title }}\'?')">
+                                <i class="bi bi-journal-plus me-2"></i>Borrow This Book
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="{{ url_for('place_reservation', book_id=book.id) }}" method="POST">
+                            <button type="submit" class="btn btn-gold px-4" onclick="return confirm('All physical copies are currently out. Join the reservation waiting queue?')">
+                                <i class="bi bi-hourglass me-2"></i>Join Reservation Queue
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <form action="{{ url_for('toggle_wishlist', book_id=book.id) }}" method="POST">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="bi bi-bookmark me-1"></i>Save to Wishlist
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if session.get('role') == 'librarian' %}
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <a href="{{ url_for('librarian_book_copies', book_id=book.id) }}" class="btn btn-outline-forest btn-sm">
+                            <i class="bi bi-bookshelf me-1"></i>Manage Physical Copies ({{ book.total_copies }})
+                        </a>
+                        <a href="{{ url_for('librarian_edit_book', book_id=book.id) }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Edit Details
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Physical Inventory Copies Table -->
+        <div class="card-academic">
+            <div class="card-header-academic">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-bookshelf text-success"></i>
+                    <span>Physical Inventory Copies ({{ copies|length }})</span>
+                </span>
+                <span class="small text-muted">Real-time status based on physical copy records</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table-academic">
+                        <thead>
+                            <tr>
+                                <th>Copy Code / Barcode</th>
+                                <th>Shelf Location</th>
+                                <th>Condition</th>
+                                <th>Availability Status</th>
+                                <th>Current Status / Due</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for copy in copies %}
+                            <tr>
+                                <td><code>{{ copy.copy_code }}</code></td>
+                                <td>{{ copy.shelf_location or book.shelf_location }}</td>
+                                <td>
+                                    <span class="badge {% if copy.condition == 'New' %}bg-success{% elif copy.condition == 'Good' %}bg-primary{% elif copy.condition == 'Fair' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ copy.condition }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if copy.status == 'available' %}
+                                    <span class="badge-available"><i class="bi bi-check-circle me-1"></i>Available On Shelf</span>
+                                    {% elif copy.status == 'borrowed' %}
+                                    <span class="badge-unavailable"><i class="bi bi-journal me-1"></i>Issued Out</span>
+                                    {% elif copy.status == 'return_pending' %}
+                                    <span class="badge-pending"><i class="bi bi-clock me-1"></i>Return Pending Verification</span>
+                                    {% elif copy.status == 'reserved' %}
+                                    <span class="badge-ready"><i class="bi bi-bookmark-check me-1"></i>Reserved For Patron</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ copy.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-secondary">
+                                    {% if copy.status in ('borrowed', 'return_pending') and copy.due_date %}
+                                    Due: <strong>{{ copy.due_date }}</strong>
+                                    {% elif copy.status == 'available' %}
+                                    <span class="text-success fw-medium">Ready for Issue</span>
+                                    {% elif copy.status == 'reserved' %}
+                                    <span class="text-primary fw-medium">Held at Circulation Desk</span>
+                                    {% else %}
+                                    {{ copy.status }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar Policies & Help -->
+    <div class="col-lg-4">
+        <div class="card-academic p-3 mb-4">
+            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="bi bi-shield-check text-success me-1"></i>Borrowing Guidelines
+            </h6>
+            <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-dot fs-5 text-success"></i>
+                    <span><strong>Student Limit:</strong> 3 books concurrently for 14 days.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-dot fs-5 text-success"></i>
+                    <span><strong>Faculty Limit:</strong> 6 books concurrently for 30 days.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-dot fs-5 text-success"></i>
+                    <span><strong>Renewals:</strong> Up to 2 times, provided no waiting reservation queue.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-dot fs-5 text-danger"></i>
+                    <span><strong>Overdue Fine:</strong> ₹5 per day starting immediately after due date.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-dot fs-5 text-primary"></i>
+                    <span><strong>Pickup Window:</strong> 3 days for fulfilled reservations.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-academic p-3">
+            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                <i class="bi bi-geo-alt text-danger me-1"></i>Physical Location
+            </h6>
+            <div class="small text-secondary">
+                <p class="mb-1"><strong>Section:</strong> {{ book.category_name }}</p>
+                <p class="mb-2"><strong>Shelf Coordinate:</strong> <code class="fs-6 text-dark">{{ book.shelf_location }}</code></p>
+                <div class="p-2 bg-light rounded border text-muted small">
+                    <i class="bi bi-info-circle me-1"></i> Locate this call number on Level 2 of the Central University Library.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

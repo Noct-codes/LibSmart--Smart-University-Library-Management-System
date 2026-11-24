@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}System Administration{% endblock %}
+{% block header_title %}Administrator Control Center{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1" style="color: var(--forest-green);">System & User Administration</h2>
+        <p class="text-secondary mb-0">Role-based access control, account status, and user management</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_create_user') }}" class="btn btn-forest">
+            <i class="bi bi-person-plus-fill me-1"></i>Add New User Account
+        </a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.total_users }}</div>
+                <div class="kpi-label">Total Users</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="kpi-card accent-info">
+            <div class="kpi-icon info"><i class="bi bi-mortarboard"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.students_cnt }}</div>
+                <div class="kpi-label">Students</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="kpi-card accent-gold">
+            <div class="kpi-icon gold"><i class="bi bi-briefcase"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.faculty_cnt }}</div>
+                <div class="kpi-label">Faculty</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-person-badge"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.librarians_cnt }}</div>
+                <div class="kpi-label">Librarians</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.active_cnt }}</div>
+                <div class="kpi-label">Active</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="kpi-card accent-danger">
+            <div class="kpi-icon danger"><i class="bi bi-x-circle"></i></div>
+            <div>
+                <div class="kpi-value">{{ data.inactive_cnt }}</div>
+                <div class="kpi-label">Deactivated</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Accounts Table Preview -->
+<div class="card-academic mb-4">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-lines-fill text-success"></i>
+            <span>University User Directory</span>
+        </span>
+        <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-forest">Manage All Users</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>University ID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Borrow Limit</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in data.recent_users %}
+                    <tr>
+                        <td><code>{{ u.university_id }}</code></td>
+                        <td class="fw-semibold">{{ u.name }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            <span class="badge {% if u.role == 'student' %}bg-primary{% elif u.role == 'faculty' %}bg-success{% elif u.role == 'librarian' %}bg-warning text-dark{% else %}bg-dark{% endif %}">
+                                {{ u.role|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ u.max_borrow_limit }} books</td>
+                        <td>
+                            {% if u.is_active %}
+                            <span class="badge bg-success-subtle text-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger">Deactivated</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin_edit_user', user_id=u.id) }}" class="btn btn-outline-secondary btn-sm" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ url_for('admin_toggle_user_status', user_id=u.id) }}" method="POST" class="d-inline ms-1">
+                                    {% if u.is_active %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Deactivate" onclick="return confirm('Deactivate account for {{ u.name }}?')">
+                                        <i class="bi bi-person-x"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Activate" onclick="return confirm('Activate account for {{ u.name }}?')">
+                                        <i class="bi bi-person-check"></i>
+                                    </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

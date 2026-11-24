@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Physical Returns{% endblock %}
+{% block header_title %}Physical Returns Verification Desk{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1" style="color: var(--forest-green);">Physical Returns Verification</h3>
+        <p class="text-secondary mb-0">Confirm receipt of returned books, verify condition, generate overdue fines, and trigger reservation queue allocations.</p>
+    </div>
+</div>
+
+<div class="card-academic mb-4">
+    <div class="card-header-academic">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-box-arrow-down-left text-warning"></i>
+            <span>Pending Return Requests ({{ pending_returns|length }})</span>
+        </span>
+    </div>
+    <div class="card-body p-0">
+        {% if pending_returns %}
+        <div class="table-responsive">
+            <table class="table-academic">
+                <thead>
+                    <tr>
+                        <th>Patron</th>
+                        <th>Book Title & ISBN</th>
+                        <th>Copy Barcode</th>
+                        <th>Due Date</th>
+                        <th>Requested On</th>
+                        <th>Condition Check & Confirmation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ret in pending_returns %}
+                    <tr>
+                        <td>
+                            <strong>{{ ret.user_name }}</strong>
+                            <div class="small text-muted">{{ ret.university_id }} ({{ ret.user_role|capitalize }})</div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('book_detail', book_id=ret.book_id) }}" class="fw-bold text-dark text-decoration-none">
+                                {{ ret.book_title }}
+                            </a>
+                            <div class="small text-muted">{{ ret.isbn }}</div>
+                        </td>
+                        <td><code>{{ ret.copy_code }}</code></td>
+                        <td>
+                            <div class="{% if ret.is_overdue %}text-danger fw-bold{% endif %}">{{ ret.due_date }}</div>
+                            {% if ret.is_overdue %}
+                            <span class="badge bg-danger small">{{ ret.days_overdue }} days overdue (₹{{ ret.days_overdue * 5 }})</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ ret.return_request_date }}</span></td>
+                        <td>
+                            <form action="{{ url_for('librarian_confirm_return', borrowing_id=ret.id) }}" method="POST" class="d-flex align-items-center gap-2">
+                                <select name="condition" class="form-select form-select-sm" style="width: 110px;">
+                                    <option value="Good" selected>Good</option>
+                                    <option value="New">New</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Damaged">Damaged</option>
+                                </select>
+                                <button type="submit" class="btn btn-forest btn-sm text-nowrap" onclick="return confirm('Confirm physical receipt of copy {{ ret.copy_code }}? If overdue, final fine will be recorded.')">
+                                    <i class="bi bi-check-circle me-1"></i>Confirm Return
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-check-circle fs-1 text-success mb-2"></i>
+            <h5>Queue is Clear</h5>
+            <p class="mb-0">There are no pending return requests awaiting physical verification at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card-academic p-3 bg-light">
+    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-arrow-repeat text-success me-1"></i>Automated Circulation Engine Workflow</h6>
+    <div class="row g-3 small text-secondary">
+        <div class="col-md-4">
+            <strong>1. Inventory Update:</strong> The book copy is never marked available prior to physical inspection by a librarian.
+        </div>
+        <div class="col-md-4">
+            <strong>2. Fine Recalculation:</strong> Overdue fine stops accumulating on the confirmed return date (₹5/day).
+        </div>
+        <div class="col-md-4">
+            <strong>3. Reservation Hand-off:</strong> If another patron is in the reservation queue for this title, the copy is automatically reserved for them and status set to 'Ready for Pickup'.
+        </div>
+    </div>
+</div>
+{% endblock %}
