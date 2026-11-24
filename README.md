@@ -115,3 +115,5 @@ python -m unittest test_app.py -v
 8. `fines` — Overdue day counts, fine amounts, and statuses (`unpaid`, `partially_paid`, `paid`).
 9. `payments` — Manual audit logs for librarian-recorded payments.
 10. `notifications` — In-app alerts, read states, and alert timestamps.
+
+# LibSmart--Smart-University-Library-Management-System
